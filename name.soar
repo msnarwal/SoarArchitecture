@@ -1,0 +1,20 @@
+wm add I2 ^name mohinder
+visualize image-type jpg
+visualize architectural-wmes on
+
+sp {propose*Echo
+	(state <s> ^type state)
+	(<s> ^io <io>)
+	(<io> ^input-link <input>)
+	(<input> ^name <str>)
+-->
+	(<s> ^operator <o> + =)
+	(<o> ^name <str>)
+}
+
+sp {apply*Echo
+	(state <s> ^operator <o>)
+	(<o> ^name <str>)
+-->
+	(write <str>)
+}
