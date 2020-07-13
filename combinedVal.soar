@@ -18,7 +18,7 @@ sp {apply*init
 -->
 	(<s> ^agent number)
 	(<s> ^val1 25)
-	(<w> ^val2 10)
+	(<s> ^val2 10)
 }
 
 
