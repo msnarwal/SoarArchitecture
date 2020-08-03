@@ -1,0 +1,132 @@
+visualize image-type jpg
+visualize architectural-wmes on
+epmem --set learning on
+
+sp {propose*init
+    (state <s> ^type state)
+    (<s> -^init)
+    (<s> ^superstate nil)
+-->
+    (<s> ^operator <o> + !)
+    (<o> ^name init)
+}
+
+sp {apply*init
+    (state <s> ^operator <o>)
+    (<o> ^name init)
+    (<s> ^smem.command <cmd>)
+-->
+    (<food> ^type food)
+    (<food> ^cake 500)
+    (<food> ^banana 50)
+    (<food> ^soda 200)
+    (<food> ^chick 300)
+    (<s> ^init true)
+    (<cmd> ^store <food>)
+    (<s> ^fridge <fri>)
+    (<fri> ^food soda)
+    (<fri> ^food cake)
+    (<fri> ^food banana)
+    (<s> ^selected <sel>)
+}
+
+sp {propose*cue
+    (state <s> ^type state)
+    (<s> ^init true)
+    (<s> -^cue)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name cue)
+}
+
+sp {apply*cue
+    (state <s> ^operator <o>)
+    (<o> ^name cue)
+    (<s> ^smem.command <cmd>)
+    (<cmd> ^store <food>)
+-->
+    (<s> ^cue true)
+    (<cmd> ^query.type food)
+    (<cmd> ^store <food> -)
+}
+
+
+sp {propose*eat_food
+    (state <s> ^type state)
+    (<s> ^fridge.food <food>)
+    (<s> -^selected.food <food>)
+    (<s> ^smem.result.retrieved <retr>)
+    (<retr> ^<food> <cal>)
+-->
+    (<s> ^operator <o> + >)
+    (<o> ^name eat_food)
+    (<o> ^food <food>)
+    (<o> ^calories <cal>)
+}
+
+sp {apply*eat_food
+    (state <s> ^operator <o>)
+    (<o> ^name eat_food)
+    (<o> ^food <food>)
+    (<s> ^selected <sel>)
+-->
+    #(<s> ^selected.food <food>)
+    (<sel> ^food <food>)
+    (write (crlf) Eating <food>)
+}
+
+sp {propose*Substate*breakImpasse
+    (state <s> ^type state)
+    (<s> ^impasse tie)
+    (<s> ^item <o1>)
+    (<s> ^item <o2>)
+    (<o1> ^name eat_food ^calories <cal1>)
+    (<o2> ^name eat_food ^calories <cal2> < <cal1>)
+    (<s> ^superstate <ss>)
+-->
+    (<ss> ^operator <o1> < <o2>)
+}
+
+
+sp {eleborate*fridge_size
+    (state <s> ^fridge <fri>)
+-->
+    (<s> ^fridge_size (size <fri>))
+}
+
+sp {eleborate*selected_size
+    (state <s> ^selected <sel>)
+    (<sel> ^food)
+-->
+    (<s> ^selected_size <sel_size> -)
+    (<s> ^selected_size (size <sel>))
+}
+
+sp {propose*retrieve_episodic
+    (state <s> ^type state)
+    (<s> ^fridge_size <fridgesize>)
+    (<s> ^selected_size <fridgesize>)
+    (<s> -^retrieve_ep)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name retrieve_episodic)
+}
+
+sp {apply*retrieve_episodic
+    (state <s> ^operator <o>)
+    (<o> ^name retrieve_episodic)
+    (<s> ^epmem.command <cmd>)
+-->
+    (<s> ^retrieve_ep true)
+    (<cmd> ^retrieve 5)
+}
+
+sp {detect*goal
+    (state <s> ^type state)
+    (<s> ^retrieve_ep)
+    (<s> ^epmem.result.retrieved <rtr>)
+    (<rtr> ^selected.food <food>)
+-->
+    (write (crlf) |First eaten: | <food>)
+    (halt)
+}
